@@ -32,14 +32,14 @@ function main() {
 
     # Check available disk space
     DIR_SIZE=`du -s $DIR | awk '{print $1;}'`
-    AVAILABLE_SPACE=$(($(stat -f --format="%a*%S")))
+    AVAILABLE_SPACE=$(($(stat -f --format="%a*%S" .)))
     # 3 * directory size gives decent amount of clearance
     NEEDED_SPACE=$((DIR_SIZE * 3))
 
     # Check if we have enough disk space
     if [[ $NEEDED_SPACE -ge $AVAILABLE_SPACE ]]
     then
-        echo "Available is insufficient."
+        echo "Available disk space is insufficient."
         echo "($NEEDED_SPACE required, $AVAILABLE_SPACE available)"
         exit 1
     fi
