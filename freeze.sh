@@ -45,7 +45,7 @@ function main() {
     fi
 
     # We have enough space!
-    ARCHIVE_NAME="$DIR.tar.xz"
+    ARCHIVE_NAME="${DIR%/}.tar.xz"
     tar cJpf $ARCHIVE_NAME $DIR
 
     # Upload to S3
