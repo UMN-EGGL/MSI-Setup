@@ -24,8 +24,8 @@ function main() {
         usage
         exit 1
     else
-        DIR=`basename $@`
-        if [[ ! -e $@ ]]
+        DIR=$@
+        if [[ ! -e $DIR ]]
         then
             echo "\'$DIR\' does not exist..."
             exit 1
@@ -33,7 +33,7 @@ function main() {
     fi
 
     # Check available disk space
-    DIR_SIZE=`du -s $@ | awk '{print $1;}'`
+    DIR_SIZE=`du -s $DIR | awk '{print $1;}'`
     AVAILABLE_SPACE=$(($(stat -f --format="%a*%S" .)))
     # 3 * directory size gives decent amount of clearance
     NEEDED_SPACE=$((DIR_SIZE * 3))
@@ -47,7 +47,7 @@ function main() {
     fi
 
     # We have enough space!
-    ARCHIVE_NAME="${DIR%/}.tar"
+    ARCHIVE_NAME="$(basename $DIR).tar"
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
     tar cpWf $ARCHIVE_NAME $DIR
     if [[ $? -ne 0 ]]
