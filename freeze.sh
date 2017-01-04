@@ -47,7 +47,7 @@ function main() {
     fi
 
     # We have enough space!
-    ARCHIVE_NAME="${$DIR%/}.tar"
+    ARCHIVE_NAME="${DIR%/}.tar"
     tar cpWf $ARCHIVE_NAME $DIR
     xz -z -e $ARCHIVE_NAME
 
