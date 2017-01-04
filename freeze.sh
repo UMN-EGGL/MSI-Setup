@@ -48,13 +48,14 @@ function main() {
 
     # We have enough space!
     ARCHIVE_NAME="${DIR%/}.tar"
+    COMPRESSED_NAME="$ARCHIVE_NAME.xz"
     tar cpWf $ARCHIVE_NAME $DIR
-    rm "$ARCHIVE_NAME.xz" 2> /dev/null
+    rm $COMPRESSED_NAME 2> /dev/null
     xz -z -e $ARCHIVE_NAME
 
     # Upload to S3
     PROJ_OWNER=`stat -c %U $DIR`
-    s3cmd --config $CONFIG_PATH -r put $ARCHIVE_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null
+    s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null
     if [[ $? -ne 0 ]]
     then
         echo "Error uploading compressed archive to S3..."
