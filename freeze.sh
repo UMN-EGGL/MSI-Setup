@@ -50,12 +50,25 @@ function main() {
     ARCHIVE_NAME="${DIR%/}.tar"
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
     tar cpWf $ARCHIVE_NAME $DIR
+    if [[ $? -ne 0 ]]
+    then
+        echo "Error creating tar archive!"
+        exit 1
+    fi
+
     rm $COMPRESSED_NAME 2> /dev/null
     xz -z -e $ARCHIVE_NAME
+    xz -t $COMPRESSED_NAME
+    if [[ $? -ne 0 ]]
+    then
+        echo "Error creating compressed archive!"
+        exit 1
+    fi
 
     # Upload to S3
     PROJ_OWNER=`stat -c %U $DIR`
-    s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null
+    s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null\
+          && rm $COMPRESSED_NAME
     if [[ $? -ne 0 ]]
     then
         echo "Error uploading compressed archive to S3..."
