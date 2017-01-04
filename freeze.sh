@@ -10,7 +10,7 @@ CONFIG_PATH="/home/mccuem/shared/.local/.s3cfg"
 unalias s3cmd 2> /dev/null
 source ~/.bashrc
 # activate the correct s3cmd
-source /home/mccuem/shared/.local/conda/bin/activate BotBot 1> /dev/null
+source /home/mccuem/shared/.local/conda/bin/activate BotBot 2> /dev/null
 
 function usage() {
     echo "Usage: freeze DIRECTORY"
