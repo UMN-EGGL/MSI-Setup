@@ -48,7 +48,7 @@ function main() {
 
     # We have enough space!
     ARCHIVE_NAME="${DIR%/}.tar.xz"
-    tar cpWJf $ARCHIVE_NAME $DIR
+    tar cWpJf $ARCHIVE_NAME $DIR
 
     # Upload to S3
     PROJ_OWNER=`stat -c %U $DIR`
