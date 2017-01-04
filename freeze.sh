@@ -33,7 +33,7 @@ function main() {
     fi
 
     # Check available disk space
-    DIR_SIZE=`du -s $DIR | awk '{print $1;}'`
+    DIR_SIZE=`du -s $@ | awk '{print $1;}'`
     AVAILABLE_SPACE=$(($(stat -f --format="%a*%S" .)))
     # 3 * directory size gives decent amount of clearance
     NEEDED_SPACE=$((DIR_SIZE * 3))
