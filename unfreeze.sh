@@ -5,7 +5,6 @@
 #PBS -N freeze
 #PBS -q lab
 
-unalias s3cmd 2> /dev/null
 source ~/.bashrc
 # activate the correct s3cmd
 source /home/mccuem/shared/.local/conda/bin/activate BotBot
