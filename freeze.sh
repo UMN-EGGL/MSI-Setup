@@ -5,9 +5,12 @@
 #PBS -N freeze
 #PBS -q lab
 
+CONFIG_PATH="/home/mccuem/shared/.local/.s3cfg"
+
+unalias s3cmd 2> /dev/null
 source ~/.bashrc
 # activate the correct s3cmd
-source /home/mccuem/shared/.local/conda/bin/activate BotBot
+source /home/mccuem/shared/.local/conda/bin/activate BotBot 1> /dev/null
 
 function usage() {
     echo "Usage: freeze DIRECTORY"
@@ -48,7 +51,7 @@ function main() {
     tar cJpf $ARCHIVE_NAME $DIR
 
     # Upload to S3
-    s3cmd -r put $ARCHIVE_NAME s3://mccuelab/$USER/ > /dev/null
+    s3cmd --config $CONFIG_PATH -r put $ARCHIVE_NAME s3://mccuelab/$USER/ > /dev/null
     if [[ $? -ne 0 ]]
     then
         echo "Error uploading compressed archive to S3..."
