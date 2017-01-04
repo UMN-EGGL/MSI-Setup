@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 #PBS -l walltime=24:00:00,nodes=1:ppn=16,mem=22gb
 #PBS -m abe
 #PBS -M stane064@umn.edu
@@ -8,7 +8,7 @@
 unalias s3cmd
 source ~/.bashrc
 # activate the correct s3cmd
-source /home/mccuem/shared/.local/conda/bin/activate s3cmd
+source /home/mccuem/shared/.local/conda/bin/activate BotBot
 
 function usage() {
     echo "Usage: freeze DIRECTORY"

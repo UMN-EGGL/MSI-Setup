@@ -1,14 +1,14 @@
-e#!/bin/bash -l
+#!/bin/bash
 #PBS -l walltime=24:00:00,nodes=1:ppn=16,mem=22gb
 #PBS -m abe
 #PBS -M stane064@umn.edu
 #PBS -N freeze
 #PBS -q lab
 
-unalias s3cmd
+unalias s3cmd 2> /dev/null
 source ~/.bashrc
 # activate the correct s3cmd
-source /home/mccuem/shared/.local/conda/bin/activate s3cmd
+source /home/mccuem/shared/.local/conda/bin/activate BotBot
 
 function usage() {
     echo "Usage: unfreeze PROJECT-NAME"
@@ -25,6 +25,7 @@ function main() {
     if [[ $# -ne 1 ]]
     then
         usage
+        exit 1
     else
         PROJECT_NAME=$@
     fi
@@ -33,7 +34,14 @@ function main() {
     S3_ARCHIVE_PATH="s3://mccuelab/$USER/$ARCHIVE_NAME"
     s3cmd get $S3_ARCHIVE_PATH
     tar xJvpf ./$ARCHIVE_NAME
-    rm $ARCHIVE_NAME
+    if [[ $? -ne 0 ]]
+    then
+        echo "Error decompressing project archive..."
+        echo "Project archive is stored at $ARCHIVE_NAME..."
+        exit 1
+    else
+        rm $ARCHIVE_NAME
+    fi
 }
 
 main $@
