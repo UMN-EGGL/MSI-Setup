@@ -49,6 +49,7 @@ function main() {
     # We have enough space!
     ARCHIVE_NAME="${DIR%/}.tar"
     tar cpWf $ARCHIVE_NAME $DIR
+    rm "$ARCHIVE_NAME.xz" 2> /dev/null
     xz -z -e $ARCHIVE_NAME
 
     # Upload to S3
