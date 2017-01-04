@@ -51,7 +51,8 @@ function main() {
     tar cJpf $ARCHIVE_NAME $DIR
 
     # Upload to S3
-    s3cmd --config $CONFIG_PATH -r put $ARCHIVE_NAME s3://mccuelab/$USER/ > /dev/null
+    PROJ_OWNER=`stat -c %U $DIR`
+    s3cmd --config $CONFIG_PATH -r put $ARCHIVE_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null
     if [[ $? -ne 0 ]]
     then
         echo "Error uploading compressed archive to S3..."
