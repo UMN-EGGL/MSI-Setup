@@ -56,8 +56,6 @@ function main() {
         echo "Compressed intermediate archive preserved at $ARCHIVE_NAME..."
         exit 1
     fi
-
-
 }
 
 # Run the script
