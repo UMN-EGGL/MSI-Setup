@@ -24,7 +24,7 @@ function main() {
         usage
         exit 1
     else
-        DIR=$@
+        DIR=`basename $@`
         if [[ ! -e $DIR ]]
         then
             echo "\'$DIR\' does not exist..."
