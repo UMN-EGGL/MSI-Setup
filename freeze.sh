@@ -49,7 +49,7 @@ function main() {
     # We have enough space!
     ARCHIVE_NAME="$(basename $DIR).tar"
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
-    tar cpWf $ARCHIVE_NAME $DIR
+    tar -C $DIR cpWf $ARCHIVE_NAME $DIR
     if [[ $? -ne 0 ]]
     then
         echo "Error creating tar archive!"
