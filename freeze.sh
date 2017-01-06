@@ -1,11 +1,11 @@
 #!/bin/bash
 #PBS -l walltime=24:00:00,nodes=1:ppn=16,mem=22gb
 #PBS -m abe
-#PBS -M stane064@umn.edu
 #PBS -N freeze
 #PBS -q lab
 
 CONFIG_PATH="/home/mccuem/shared/.local/.s3cfg"
+THREADS=16 # Number of compression threads.
 
 unalias s3cmd 2> /dev/null
 source ~/.bashrc
@@ -33,6 +33,7 @@ function main() {
     fi
 
     # Check available disk space
+    echo "Computing necessary disk space..."
     DIR_SIZE=`du -s $DIR | awk '{print $1;}'`
     AVAILABLE_SPACE=$(($(stat -f --format="%a*%S" .)))
     # 3 * directory size gives decent amount of clearance
@@ -44,9 +45,12 @@ function main() {
         echo "Available disk space is insufficient."
         echo "($NEEDED_SPACE required, $AVAILABLE_SPACE available)"
         exit 1
+    else
+        echo "Sufficient disk space found."
     fi
 
     # We have enough space!
+    echo "Creating tar archive..."
     BASENAME="$(basename $DIR)"
     ARCHIVE_NAME="$BASENAME.tar"
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
@@ -55,18 +59,24 @@ function main() {
     then
         echo "Error creating tar archive!"
         exit 1
+    else
+        echo "Tar archive created successfully."
     fi
 
+    echo "Beginning compression..."
     rm $COMPRESSED_NAME 2> /dev/null
-    xz -z -e $ARCHIVE_NAME
+    xz -z -e -T $THREADS $ARCHIVE_NAME
     xz -t $COMPRESSED_NAME
     if [[ $? -ne 0 ]]
     then
         echo "Error creating compressed archive!"
         exit 1
+    else
+        echo "Compression completed successfully."
     fi
 
     # Upload to S3
+    echo "Beginning upload to Amazon S3..."
     PROJ_OWNER=`stat -c %U $DIR`
     s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null\
           && rm $COMPRESSED_NAME
@@ -75,6 +85,8 @@ function main() {
         echo "Error uploading compressed archive to S3..."
         echo "Compressed intermediate archive preserved at $ARCHIVE_NAME..."
         exit 1
+    else
+        echo "Upload successful."
     fi
 }
 
