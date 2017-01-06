@@ -50,17 +50,22 @@ function main() {
     fi
 
     # We have enough space!
-    echo "Creating tar archive..."
     BASENAME="$(basename $DIR)"
     ARCHIVE_NAME="$BASENAME.tar"
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
-    tar cpW -C $DIR/.. $BASENAME -f $ARCHIVE_NAME
-    if [[ $? -ne 0 ]]
+    if [[ -e $ARCHIVE_NAME ]]
     then
-        echo "Error creating tar archive!"
-        exit 1
+        echo "Found tar archive $ARCHIVE_NAME..."
     else
-        echo "Tar archive created successfully."
+        echo "Creating tar archive..."
+        tar cpW -C $DIR/.. $BASENAME -f $ARCHIVE_NAME
+        if [[ $? -ne 0 ]]
+        then
+            echo "Error creating tar archive!"
+            exit 1
+        else
+            echo "Tar archive created successfully."
+        fi
     fi
 
     echo "Beginning compression..."
