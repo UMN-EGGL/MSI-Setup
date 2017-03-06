@@ -49,6 +49,10 @@ function add-my-email() {
 }
 
 function get-email-of() {
+    if [[ $(grep $USER ${SHARED_BASE}/emails.txt | wc -l) == 0 ]]
+    then
+        add-my-email;
+    fi
     WHICH_USER=$USER
     if [[ $# == 1 ]]
     then
@@ -60,6 +64,12 @@ function get-email-of() {
 
 function freeze {
     EMAIL=$(get-email-of)
+
+    if [[ $(hostname) != lab* ]]; 
+    then 
+        echo "log into lab.msi.umn.edu to use the freeze command"
+        return 1
+    fi
 
     if [[ $# -ne 1 ]]
     then
