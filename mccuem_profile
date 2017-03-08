@@ -19,6 +19,11 @@ export LD_LIBRARY_PATH=/home/mccuem/shared/.local/lib:$LD_LIBRARY_PATH
 
 alias usage="du -sch .[!.]* * | sort -h"
 
+function reload-mccuem {
+    export LAB_PROFILE=''
+    source ~/.bashrc
+}
+
 function fix-permissions {
     echo "Fixing permissions...."
     find /home/mccuem/ ! -readable -prune -o -user $(whoami) -type f -exec chmod g+r {} \; -o -user $(whoami) -type d -exec chmod g+rx {} \;
@@ -86,8 +91,16 @@ function freeze {
 
         return 1
     fi
+    DIR=$(readlink -f $1)
 
-    qsub -F "$1" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+    qsub -F "$DIR" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+}
+
+function freeze-list {
+    /home/mccuem/shared/.local/conda/envs/s3cmd/bin/python \
+    /home/mccuem/shared/.local/conda/envs/s3cmd/bin/s3cmd \
+    --config /home/mccuem/shared/.local/.s3cfg \
+    ls s3://mccuelab/$USER/
 }
 
 cat << EOF >&2
