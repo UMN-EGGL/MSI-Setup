@@ -73,8 +73,17 @@ function freeze {
 
     if [[ $# -ne 1 ]]
     then
-        echo "Wrong number of arguments."
-        echo "USAGE: freeze DIRECTORY"
+        echo "Syntax Error!"
+        echo "------------------------------------------------------------"
+        echo "Usage:"
+        echo "% freeze DIRECTORY_NAME"
+        echo ""
+        echo "This command will submit a PBS job to the lab queue."
+        echo "The job will archive, compress and upload the contents of"
+        echo "DIRECTORY_NAME to secondary storage. The standard output and"
+        echo "error files will be generated and you will recieve emails"
+        echo "from the PBS system as normal."
+
         return 1
     fi
 
