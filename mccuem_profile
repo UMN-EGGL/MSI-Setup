@@ -7,8 +7,9 @@ umask 027
 # return if this script has already run.
 [[ -z $LAB_PROFILE ]] || return
 
-CONDA_BASE="/home/mccuem/shared/.local/conda"
-SHARED_BASE='/home/mccuem/shared/.local'
+SHARED_DIR="/home/mccuem/shared"
+SHARED_BASE="$SHARED_DIR/.local"
+CONDA_BASE="$SHARED_BASE/conda"
 EMAIL_LIST_PATH="$SHARED_BASE/emails.txt"
 
 # McCuelab Shared directives
