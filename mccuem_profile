@@ -41,19 +41,6 @@ function transfer-file-ownership {
     echo "DONE!"
 }
 
-function add-my-email() {
-    USER_EMAIL="$(grep $USER $EMAIL_LIST_PATH)"
-
-    if [[ -z $USER_EMAIL ]]
-    then
-        echo -n "Please supply your email address: "
-        read USER_EMAIL
-        echo "$USER $USER_EMAIL" >> "$EMAIL_LIST_PATH"
-    else
-        echo "Your email is already recorded."
-    fi
-}
-
 function get-email-of() {
     if [[ $(grep $USER ${SHARED_BASE}/emails.txt | wc -l) == 0 ]]
     then
@@ -68,11 +55,24 @@ function get-email-of() {
     cut -d ' ' -f 2 <<< "$USER_LINE"
 }
 
+function add-my-email() {
+    USER_EMAIL="$(get-email-of $USER)"
+
+    if [[ -z $USER_EMAIL ]]
+    then
+        echo -n "Please supply your email address: "
+        read USER_EMAIL
+        echo "$USER $USER_EMAIL" >> "$EMAIL_LIST_PATH"
+    else
+        echo "Your email is already recorded."
+    fi
+}
+
 function freeze() {
     EMAIL=$(get-email-of)
 
-    if [[ $(hostname) != lab* ]]; 
-    then 
+    if [[ $(hostname) != lab* ]];
+    then
         echo "log into lab.msi.umn.edu to use the freeze command"
         return 1
     fi
