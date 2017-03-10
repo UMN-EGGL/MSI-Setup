@@ -20,6 +20,11 @@ export LD_LIBRARY_PATH=/home/mccuem/shared/.local/lib:$LD_LIBRARY_PATH
 
 alias usage="du -sch .[!.]* * | sort -h"
 
+function reload-mccuem {
+    export LAB_PROFILE=''
+    source ~/.bashrc
+}
+
 function fix-permissions {
     echo "Fixing permissions...."
     find /home/mccuem/ ! -readable -prune -o -user $(whoami) -type f -exec chmod g+r {} \; -o -user $(whoami) -type d -exec chmod g+rx {} \;
@@ -50,6 +55,10 @@ function add-my-email() {
 }
 
 function get-email-of() {
+    if [[ $(grep $USER ${SHARED_BASE}/emails.txt | wc -l) == 0 ]]
+    then
+        add-my-email;
+    fi
     WHICH_USER=$USER
     if [[ $# == 1 ]]
     then
@@ -62,14 +71,37 @@ function get-email-of() {
 function freeze() {
     EMAIL=$(get-email-of)
 
-    if [[ $# -ne 1 ]]
-    then
-        echo "Wrong number of arguments."
-        echo "USAGE: freeze DIRECTORY"
+    if [[ $(hostname) != lab* ]]; 
+    then 
+        echo "log into lab.msi.umn.edu to use the freeze command"
         return 1
     fi
 
-    qsub -F "$1" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+    if [[ $# -ne 1 ]]
+    then
+        echo "Syntax Error!"
+        echo "------------------------------------------------------------"
+        echo "Usage:"
+        echo "% freeze DIRECTORY_NAME"
+        echo ""
+        echo "This command will submit a PBS job to the lab queue."
+        echo "The job will archive, compress and upload the contents of"
+        echo "DIRECTORY_NAME to secondary storage. The standard output and"
+        echo "error files will be generated and you will recieve emails"
+        echo "from the PBS system as normal."
+
+        return 1
+    fi
+    DIR=$(readlink -f $1)
+
+    qsub -F "$DIR" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+}
+
+function freeze-list {
+    /home/mccuem/shared/.local/conda/envs/s3cmd/bin/python \
+    /home/mccuem/shared/.local/conda/envs/s3cmd/bin/s3cmd \
+    --config /home/mccuem/shared/.local/.s3cfg \
+    ls s3://mccuelab/$USER/
 }
 
 function update-lab-profile() {
@@ -85,7 +117,7 @@ cat << EOF >&2
 -------------------------------------------------
 ------- Currently using McCue Lab Profile -------
 -------------------------------------------------
-        For comlete documentation, visit:
+        For complete documentation, visit:
      http://github.com/UMNPonyClub/MSI-Setup
 EOF
 
