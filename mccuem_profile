@@ -72,6 +72,14 @@ function freeze {
     qsub -F "$1" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
 }
 
+function update-lab-profile() {
+    pushd $SHARED_DIR/MSI-Setup 1> /dev/null
+
+    git pull
+
+    popd 1> /dev/null
+}
+
 cat << EOF >&2
 
 -------------------------------------------------
