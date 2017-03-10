@@ -55,11 +55,11 @@ function get-email-of() {
     then
         WHICH_USER=$1
     fi
-    USER_LINE="$(grep $WHICH_USER $EMAIL_LIST_PATH)"
+    USER_LINE="$(grep \"^$WHICH_USER\" $EMAIL_LIST_PATH)"
     cut -d ' ' -f 2 <<< "$USER_LINE"
 }
 
-function freeze {
+function freeze() {
     EMAIL=$(get-email-of)
 
     if [[ $# -ne 1 ]]
