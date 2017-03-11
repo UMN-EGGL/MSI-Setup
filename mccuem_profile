@@ -70,6 +70,10 @@ function add-my-email() {
 
 function freeze() {
     EMAIL=$(get-email-of)
+    if [[ -z "$EMAIL" ]];
+    then
+        echo "could not find appropriate email for user"
+    fi
 
     if [[ $(hostname) != lab* ]];
     then
