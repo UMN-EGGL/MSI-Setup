@@ -98,7 +98,12 @@ function freeze() {
     fi
     DIR=$(readlink -f $1)
 
-    qsub -F "$DIR" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+    if [[ ! -z "$EMAIL" ]]
+    then
+        qsub -F "$DIR" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+    else
+        echo "No email for user $USER. Try running 'add-my-email'"
+    fi
 }
 
 function freeze-list {
