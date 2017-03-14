@@ -100,7 +100,7 @@ function freeze() {
 
     if [[ ! -z "$EMAIL" ]]
     then
-        qsub -F "$DIR" -M "$EMAIL" -q lab "$(which freeze.sh)" && echo "Job submitted."
+        qsub -F "$DIR" -M "$EMAIL" -q lab-long "$(which freeze.sh)" && echo "Job submitted."
     else
         echo "No email for user $USER. Try running 'add-my-email'"
     fi
