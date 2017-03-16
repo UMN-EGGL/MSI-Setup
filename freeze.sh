@@ -17,6 +17,10 @@ function usage() {
     echo "Freezes a directory's contents and uploads to S3."
 }
 
+function timelog() {
+    echo "`date`: $@"
+}
+
 function main() {
     # Parse command line arguments
     if [[ $# -ne 1 ]]
@@ -33,7 +37,7 @@ function main() {
     fi
 
     # Check available disk space
-    echo "Computing necessary disk space..."
+    timelog "Computing necessary disk space..."
     DIR_SIZE=`du -s $DIR | awk '{print $1;}'`
     AVAILABLE_SPACE=$(($(stat -f --format="%a*%S" .)))
     # 3 * directory size gives decent amount of clearance
@@ -42,11 +46,11 @@ function main() {
     # Check if we have enough disk space
     if [[ $NEEDED_SPACE -ge $AVAILABLE_SPACE ]]
     then
-        echo "Available disk space is insufficient."
-        echo "($NEEDED_SPACE required, $AVAILABLE_SPACE available)"
+        timelog "Available disk space is insufficient."
+        timelog "($NEEDED_SPACE required, $AVAILABLE_SPACE available)"
         exit 1
     else
-        echo "Sufficient disk space found."
+        timelog "Sufficient disk space found."
     fi
 
     # We have enough space!
@@ -55,43 +59,43 @@ function main() {
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
     if [[ -e $ARCHIVE_NAME ]]
     then
-        echo "Found tar archive $ARCHIVE_NAME..."
+        timelog "Found tar archive $ARCHIVE_NAME..."
     else
-        echo "Creating tar archive..."
+        timelog "Creating tar archive..."
         tar cpW -C $DIR/.. $BASENAME -f $ARCHIVE_NAME
         if [[ $? -ne 0 ]]
         then
-            echo "Error creating tar archive!"
+            timelog "Error creating tar archive!"
             exit 1
         else
-            echo "Tar archive created successfully."
+            timelog "Tar archive created successfully."
         fi
     fi
 
-    echo "Beginning compression..."
+    timelog "Beginning compression..."
     rm $COMPRESSED_NAME 2> /dev/null
     xz -z -e -T $THREADS $ARCHIVE_NAME
     xz -t $COMPRESSED_NAME
     if [[ $? -ne 0 ]]
     then
-        echo "Error creating compressed archive!"
+        timelog "Error creating compressed archive!"
         exit 1
     else
-        echo "Compression completed successfully."
+        timelog "Compression completed successfully."
     fi
 
     # Upload to S3
-    echo "Beginning upload to Amazon S3..."
+    timelog "Beginning upload to Amazon S3..."
     PROJ_OWNER=`stat -c %U $DIR`
     s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null\
           && rm $COMPRESSED_NAME
     if [[ $? -ne 0 ]]
     then
-        echo "Error uploading compressed archive to S3..."
-        echo "Compressed intermediate archive preserved at $ARCHIVE_NAME..."
+        timelog "Error uploading compressed archive to S3..."
+        timelog "Compressed intermediate archive preserved at $ARCHIVE_NAME..."
         exit 1
     else
-        echo "Upload successful."
+        timelog "Upload successful."
     fi
 }
 
