@@ -21,7 +21,29 @@ function timelog() {
     echo "`date`: $@"
 }
 
+function check-xz-version() {
+    XZ_VERSION="$(xz --version | head -n 1 | sed -n 's/.*\([0-9]\.[0-9]\.[0-9]\)$/\1/p')"
+    REQUIRED_XZ_VERSION="5.2.3"
+    LOWER_VERSION=$(echo "$REQUIRED_XZ_VERSION,$XZ_VERSION" | tr ',' '\n' | sort -V | head -n 1)
+    if [[ "$LOWER_VERSION" != "$REQUIRED_XZ_VERSION" ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
 function main() {
+    # Start by checking the xz compression version. We want
+    # multithreading!
+    XZ_CORRECT_VERSION=$(check-xz-version)
+    if [[ $XZ_CORRECT_VERSION -eq 1 ]]
+    then
+        timelog "xz out of date..."
+        timelog "($REQUIRED_XZ_VERSION is required, $XZ_VERSION is installed...)"
+        exit 1
+    fi
+
     # Parse command line arguments
     if [[ $# -ne 1 ]]
     then
