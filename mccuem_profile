@@ -3,7 +3,8 @@
 # MAKE SURE THIS RUNS REGARDLESS!
 umask 027
 
-
+[[ -z $PS1 ]] || PS1="\u@\h [\w] % "
+ 
 # return if this script has already run.
 [[ -z $LAB_PROFILE ]] || return
 
@@ -17,6 +18,12 @@ export PATH=$CONDA_BASE/bin:$PATH
 export PATH=$SHARED_BASE/bin:$PATH
 export LD_LIBRARY_PATH=/home/mccuem/shared/.local/lib:$LD_LIBRARY_PATH
 
+
+# Some of the older MSI Nodes only run ~/.profile
+touch ~/.profile
+if [[ $(grep "source ~/.bashrc" $HOME/.profile | wc -l ) != 1 ]]; then
+    echo "source ~/.bashrc" >> $HOME/.profile
+fi
 
 alias usage="du -sch .[!.]* * | sort -h"
 
@@ -51,7 +58,7 @@ function get-email-of() {
     then
         WHICH_USER=$1
     fi
-    USER_LINE="$(grep \"^$WHICH_USER\" $EMAIL_LIST_PATH)"
+    USER_LINE=$(grep ^$WHICH_USER $EMAIL_LIST_PATH)
     cut -d ' ' -f 2 <<< "$USER_LINE"
 }
 
@@ -65,6 +72,57 @@ function add-my-email() {
         echo "$USER $USER_EMAIL" >> "$EMAIL_LIST_PATH"
     else
         echo "Your email is already recorded."
+    fi
+}
+
+function connect-to-cs() {
+    if [[ $(hostname) != ln* ]];
+    then
+        echo "log into a mesabi node (mesabi.msi.um.edu) to use this freeze "
+        return 1
+    fi
+    mkdir -p /tmp/$USER/csbio
+    sshfs $CSUSER@crick.cs.umn.edu:/project/mccuelab /tmp/$USER/csbio
+}
+
+function unfreeze(){
+    EMAIL=$(get-email-of)
+    if [[ -z "$EMAIL" ]];
+    then
+        echo "could not find appropriate email for user"
+    fi
+
+    if [[ $(hostname) != lab* ]];
+    then
+        echo "log into lab.msi.umn.edu to use the freeze command"
+        return 1
+    fi
+
+    if [[ $# -ne 1 ]]
+    then
+        echo "Syntax Error!"
+        echo "------------------------------------------------------------"
+        echo "Usage:"
+        echo "% unfreeze DIRECTORY_NAME"
+        echo ""
+        echo "This command will submit a PBS job to the lab queue."
+        echo "The job will unarchive, uncompress the contents of"
+        echo "DIRECTORY_NAME from secondary storage. The standard output and"
+        echo "error files will be generated and you will recieve emails"
+        echo "from the PBS system as normal."
+        echo ""
+        echo "**NOTE:** use the freeze-list command to see what archives you have"
+        echo "available"
+
+        return 1
+    fi
+    DIR=$1
+
+    if [[ ! -z "$EMAIL" ]]
+    then
+        qsub -F "$DIR" -M "$EMAIL" "$(which unfreeze.sh)" && echo "Job submitted."
+    else
+        echo "No email for user $USER. Try running 'add-my-email'"
     fi
 }
 
@@ -100,7 +158,7 @@ function freeze() {
 
     if [[ ! -z "$EMAIL" ]]
     then
-        qsub -F "$DIR" -M "$EMAIL" -q lab-long "$(which freeze.sh)" && echo "Job submitted."
+        qsub -F "$DIR" -M "$EMAIL" "$(which freeze.sh)" && echo "Job submitted."
     else
         echo "No email for user $USER. Try running 'add-my-email'"
     fi
