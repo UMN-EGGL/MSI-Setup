@@ -17,6 +17,7 @@ EMAIL_LIST_PATH="$SHARED_BASE/emails.txt"
 export PATH=$CONDA_BASE/bin:$PATH
 export PATH=$SHARED_BASE/bin:$PATH
 export LD_LIBRARY_PATH=/home/mccuem/shared/.local/lib:$LD_LIBRARY_PATH
+export FREEZEBUCKET="mccue-lab"
 
 
 alias usage="du -sch .[!.]* * | sort -h"
@@ -158,11 +159,12 @@ function freeze() {
     fi
 }
 
+
 function freeze-list {
     /home/mccuem/shared/.local/conda/envs/s3cmd/bin/python \
     /home/mccuem/shared/.local/conda/envs/s3cmd/bin/s3cmd \
     --config /home/mccuem/shared/.local/.s3cfg \
-    ls s3://mccuelab/$USER/
+    ls s3://$FREEZEBUCKET/$USER/
 }
 
 function update-lab-profile() {
