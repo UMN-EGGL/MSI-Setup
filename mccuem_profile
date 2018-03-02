@@ -19,12 +19,6 @@ export PATH=$SHARED_BASE/bin:$PATH
 export LD_LIBRARY_PATH=/home/mccuem/shared/.local/lib:$LD_LIBRARY_PATH
 
 
-# Some of the older MSI Nodes only run ~/.profile
-touch ~/.profile
-if [[ $(grep "source ~/.bashrc" $HOME/.profile | wc -l ) != 1 ]]; then
-    echo "source ~/.bashrc" >> $HOME/.profile
-fi
-
 alias usage="du -sch .[!.]* * | sort -h"
 
 function reload-mccuem {
