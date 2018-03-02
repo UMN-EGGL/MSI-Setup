@@ -6,6 +6,7 @@
 
 CONFIG_PATH="/home/mccuem/shared/.local/.s3cfg"
 THREADS=15 # Number of compression threads.
+FREEZEBUCKET='mccue-lab'
 
 unalias s3cmd 2> /dev/null
 source ~/.bashrc
@@ -20,7 +21,33 @@ function usage() {
     echo "DIRECTORY_NAME to secondary storage."
 }
 
+function timelog() {
+    echo "`date`: $@"
+}
+
+function check-xz-version() {
+    XZ_VERSION="$(xz --version | head -n 1 | sed -n 's/.*\([0-9]\.[0-9]\.[0-9]\)$/\1/p')"
+    REQUIRED_XZ_VERSION="5.2.3"
+    LOWER_VERSION=$(echo "$REQUIRED_XZ_VERSION,$XZ_VERSION" | tr ',' '\n' | sort -V | head -n 1)
+    if [[ "$LOWER_VERSION" != "$REQUIRED_XZ_VERSION" ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
 function main() {
+    # Start by checking the xz compression version. We want
+    # multithreading!
+    XZ_CORRECT_VERSION=$(check-xz-version)
+    if [[ $XZ_CORRECT_VERSION -eq 1 ]]
+    then
+        timelog "xz out of date..."
+        timelog "($REQUIRED_XZ_VERSION is required, $XZ_VERSION is installed...)"
+        exit 1
+    fi
+
     # Parse command line arguments
     if [[ $# -ne 1 ]]
     then
@@ -36,7 +63,7 @@ function main() {
     fi
 
     # Check available disk space
-    echo "Computing necessary disk space..."
+    timelog "Computing necessary disk space..."
     DIR_SIZE=`du -s $DIR | awk '{print $1;}'`
     AVAILABLE_SPACE=$(($(stat -f --format="%a*%S" .)))
     # 3 * directory size gives decent amount of clearance
@@ -45,11 +72,11 @@ function main() {
     # Check if we have enough disk space
     if [[ $NEEDED_SPACE -ge $AVAILABLE_SPACE ]]
     then
-        echo "Available disk space is insufficient."
-        echo "($NEEDED_SPACE required, $AVAILABLE_SPACE available)"
+        timelog "Available disk space is insufficient."
+        timelog "($NEEDED_SPACE required, $AVAILABLE_SPACE available)"
         exit 1
     else
-        echo "Sufficient disk space found."
+        timelog "Sufficient disk space found."
     fi
 
     # We have enough space!
@@ -58,43 +85,43 @@ function main() {
     COMPRESSED_NAME="$ARCHIVE_NAME.xz"
     if [[ -e $ARCHIVE_NAME ]]
     then
-        echo "Found tar archive $ARCHIVE_NAME..."
+        timelog "Found tar archive $ARCHIVE_NAME..."
     else
-        echo "Creating tar archive..."
+        timelog "Creating tar archive..."
         tar cpW -C $DIR/.. $BASENAME -f $ARCHIVE_NAME
         if [[ $? -ne 0 ]]
         then
-            echo "Error creating tar archive!"
+            timelog "Error creating tar archive!"
             exit 1
         else
-            echo "Tar archive created successfully."
+            timelog "Tar archive created successfully."
         fi
     fi
 
-    echo "Beginning compression..."
+    timelog "Beginning compression..."
     rm $COMPRESSED_NAME 2> /dev/null
     xz -z -e -T $THREADS $ARCHIVE_NAME
     xz -t $COMPRESSED_NAME
     if [[ $? -ne 0 ]]
     then
-        echo "Error creating compressed archive!"
+        timelog "Error creating compressed archive!"
         exit 1
     else
-        echo "Compression completed successfully."
+        timelog "Compression completed successfully."
     fi
 
     # Upload to S3
-    echo "Beginning upload to Amazon S3..."
+    timelog "Beginning upload to S3..."
     PROJ_OWNER=`stat -c %U $DIR`
-    s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://mccuelab/$PROJ_OWNER/ > /dev/null\
+    s3cmd --config $CONFIG_PATH -r put $COMPRESSED_NAME s3://$FREEZEBUCKET/$PROJ_OWNER/ > /dev/null\
           && rm $COMPRESSED_NAME
     if [[ $? -ne 0 ]]
     then
-        echo "Error uploading compressed archive to S3..."
-        echo "Compressed intermediate archive preserved at $ARCHIVE_NAME..."
+        timelog "Error uploading compressed archive to S3..."
+        timelog "Compressed intermediate archive preserved at $ARCHIVE_NAME..."
         exit 1
     else
-        echo "Upload successful."
+        timelog "Upload successful."
     fi
 }
 
