@@ -2,7 +2,7 @@
 #PBS -l walltime=48:00:00,nodes=1:ppn=16,mem=22gb
 #PBS -m abe
 #PBS -N freeze
-#PBS -q lab-long
+#PBS -q lab
 
 CONFIG_PATH="/home/mccuem/shared/.local/.s3cfg"
 THREADS=15 # Number of compression threads.
