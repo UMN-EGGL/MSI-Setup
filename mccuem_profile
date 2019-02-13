@@ -27,6 +27,14 @@ function reload-mccuem {
     source ~/.bashrc
 }
 
+function fix-permissions-writeable {
+    echo "Fixing permissions...."
+    find /home/mccuem/ ! -readable -prune -o -user $(whoami) -type f -exec chmod g+rw {} \; -o -user $(whoami) -type d -exec chmod g+rwx {} \;
+    echo ".ssh folder cannot be group readable"
+    chmod -R g-rw ~/.ssh
+    echo "DONE!"
+}
+
 function fix-permissions {
     echo "Fixing permissions...."
     find /home/mccuem/ ! -readable -prune -o -user $(whoami) -type f -exec chmod g+r {} \; -o -user $(whoami) -type d -exec chmod g+rx {} \;
